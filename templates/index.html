@@ -1,0 +1,938 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Titanic Survival Prediction | Gaussian Naive Bayes ML</title>
+    <meta name="description" content="Explore a machine learning project that predicts Titanic passenger survival using Gaussian Naive Bayes. Enter passenger details to get a prediction.">
+    <meta name="keywords" content="Titanic survival prediction, Gaussian Naive Bayes, machine learning project, Flask, Python, passenger survival classifier">
+    <meta name="author" content="Machine Learning Project">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#101827">
+
+    <meta property="og:title" content="Titanic Survival Prediction">
+    <meta property="og:description" content="An interactive Titanic passenger survival prediction application powered by Gaussian Naive Bayes.">
+    <meta property="og:type" content="website">
+
+    <link rel="canonical" href="{{ request.url_root }}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --ink: #172033;
+            --muted: #68758b;
+            --primary: #5145e5;
+            --primary-dark: #3730a3;
+            --surface: #ffffff;
+            --border: #e5eaf2;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 85px;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+
+        .navbar {
+            background: rgba(16, 24, 39, .97);
+            backdrop-filter: blur(12px);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            letter-spacing: -.5px;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            display: inline-grid;
+            place-items: center;
+            border-radius: 12px;
+            background: var(--primary);
+            margin-right: 8px;
+        }
+
+        .hero {
+            color: white;
+            background:
+                radial-gradient(circle at 85% 20%, rgba(129, 140, 248, .3), transparent 28%),
+                linear-gradient(125deg, #101827, #24205b 70%, #5145e5);
+            padding: 100px 0 85px;
+            overflow: hidden;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            line-height: 1.08;
+            letter-spacing: -2px;
+            font-weight: 850;
+        }
+
+        .hero p {
+            color: #d4d9ee;
+            max-width: 650px;
+            line-height: 1.8;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            border: 1px solid #7771dc;
+            background: #ffffff12;
+            border-radius: 50px;
+            padding: 8px 14px;
+            font-size: .85rem;
+            margin-bottom: 22px;
+        }
+
+        .hero-visual {
+            min-height: 280px;
+            display: grid;
+            place-items: center;
+            position: relative;
+        }
+
+        .ship-icon {
+            width: 210px;
+            height: 210px;
+            border-radius: 45px;
+            display: grid;
+            place-items: center;
+            font-size: 6rem;
+            background: linear-gradient(135deg, #ffffff20, #ffffff08);
+            border: 1px solid #ffffff35;
+            transform: rotate(-5deg);
+            box-shadow: 0 30px 80px #0003;
+        }
+
+        .section-space {
+            padding: 78px 0;
+        }
+
+        .section-heading {
+            font-weight: 800;
+            letter-spacing: -.8px;
+        }
+
+        .section-subtitle {
+            color: var(--muted);
+            max-width: 680px;
+            line-height: 1.8;
+        }
+
+        .surface-card {
+            height: 100%;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--surface);
+            padding: 25px;
+            box-shadow: 0 8px 30px #17203306;
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .surface-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 36px #17203310;
+        }
+
+        .feature-icon {
+            display: grid;
+            place-items: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: #eeedff;
+            color: var(--primary);
+            font-size: 1.35rem;
+            margin-bottom: 18px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 23px;
+            height: 100%;
+        }
+
+        .stat-value {
+            font-size: 1.7rem;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .algorithm-box {
+            background: #111827;
+            color: white;
+            border-radius: 22px;
+            padding: 30px;
+        }
+
+        .algorithm-box p {
+            color: #c5cede;
+            line-height: 1.8;
+        }
+
+        .algorithm-chip {
+            display: inline-block;
+            border: 1px solid #5552a2;
+            background: #5145e52b;
+            color: #d9d6ff;
+            border-radius: 9px;
+            padding: 8px 12px;
+            margin: 4px 3px 0 0;
+            font-size: .9rem;
+        }
+
+        .table {
+            --bs-table-bg: transparent;
+            vertical-align: middle;
+        }
+
+        .table thead th {
+            background: #f4f5fb;
+            color: #424e65;
+            font-size: .85rem;
+            white-space: nowrap;
+        }
+
+        .table td, .table th {
+            padding: 15px;
+        }
+
+        .form-section {
+            background: linear-gradient(180deg, #f4f7fb, #eeefff);
+        }
+
+        .prediction-card {
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 22px;
+            padding: 28px;
+            box-shadow: 0 12px 35px #1720330c;
+        }
+
+        .form-label {
+            font-weight: 650;
+            font-size: .92rem;
+        }
+
+        .form-control, .form-select {
+            min-height: 48px;
+            border-color: #dce2ec;
+            border-radius: 10px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 .2rem #5145e51c;
+        }
+
+        .btn-primary {
+            --bs-btn-bg: var(--primary);
+            --bs-btn-border-color: var(--primary);
+            --bs-btn-hover-bg: var(--primary-dark);
+            --bs-btn-hover-border-color: var(--primary-dark);
+            border-radius: 10px;
+            padding: 12px 22px;
+            font-weight: 700;
+        }
+
+        .result-panel {
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .result-survived {
+            background: #e8f8ef;
+            border: 1px solid #b5e6c8;
+            color: #17663a;
+        }
+
+        .result-not-survived {
+            background: #fff0ef;
+            border: 1px solid #f2c3bf;
+            color: #a12d27;
+        }
+
+        .result-number {
+            font-size: 2rem;
+            font-weight: 850;
+        }
+
+        .faq-item {
+            border: 1px solid var(--border);
+            border-radius: 14px !important;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .accordion-button {
+            font-weight: 700;
+            padding: 20px;
+        }
+
+        .accordion-button:not(.collapsed) {
+            color: var(--primary-dark);
+            background: #f0efff;
+            box-shadow: none;
+        }
+
+        footer {
+            background: #101827;
+            color: #d2d8e5;
+            padding: 35px 0;
+        }
+
+        footer a {
+            color: #d2d8e5;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: white;
+        }
+
+        @media (max-width: 767px) {
+            .hero {
+                padding: 75px 0 55px;
+            }
+
+            .hero h1 {
+                letter-spacing: -1px;
+            }
+
+            .hero-visual {
+                min-height: 200px;
+                margin-top: 20px;
+            }
+
+            .ship-icon {
+                width: 155px;
+                height: 155px;
+                font-size: 4.5rem;
+            }
+
+            .section-space {
+                padding: 55px 0;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                transition: none !important;
+            }
+        }
+    </style>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Titanic Survival Prediction",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "description": "An educational machine learning application that predicts Titanic passenger survival using Gaussian Naive Bayes."
+    }
+    </script>
+</head>
+
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="#home" aria-label="Titanic ML home">
+            <span class="brand-icon"><i class="bi bi-water"></i></span>
+            Titanic<span class="text-info">ML</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNav" aria-controls="mainNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                <li class="nav-item"><a class="nav-link" href="#overview">Overview</a></li>
+                <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                <li class="nav-item"><a class="nav-link" href="#algorithm">Algorithm</a></li>
+                <li class="nav-item"><a class="nav-link" href="#evaluation">Evaluation</a></li>
+                <li class="nav-item">
+                    <a class="btn btn-primary btn-sm ms-lg-2" href="#predict">Try Prediction</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<header class="hero" id="home">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <span class="hero-tag">
+                    <i class="bi bi-cpu me-2"></i>Machine Learning Project 10
+                </span>
+
+                <h1>Predict Titanic<br><span class="text-info">Passenger Survival.</span></h1>
+
+                <p class="mt-4 mb-4">
+                    Explore how machine learning can classify passenger survival
+                    using passenger class, age, fare, family information, and other
+                    historical data. Enter passenger details and get a model prediction.
+                </p>
+
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="#predict" class="btn btn-primary btn-lg">
+                        <i class="bi bi-magic me-2"></i>Predict Survival
+                    </a>
+                    <a href="#overview" class="btn btn-outline-light btn-lg">
+                        Explore Project
+                    </a>
+                </div>
+
+                <div class="d-flex flex-wrap gap-4 mt-4 small text-white-50">
+                    <span><i class="bi bi-check-circle me-1"></i>Python + Flask</span>
+                    <span><i class="bi bi-check-circle me-1"></i>Gaussian Naive Bayes</span>
+                    <span><i class="bi bi-check-circle me-1"></i>Interactive Prediction</span>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="hero-visual" aria-hidden="true">
+                    <div class="ship-icon"><i class="bi bi-tsunami"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="section-space" id="overview">
+        <div class="container">
+            <div class="mb-5">
+                <span class="text-primary fw-bold small text-uppercase">Project overview</span>
+                <h2 class="section-heading mt-2">About the project</h2>
+                <p class="section-subtitle">
+                    This is a binary classification project based on the Titanic
+                    passenger dataset. The trained model estimates which of two
+                    classes a passenger belongs to: survived or did not survive.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <article class="surface-card">
+                        <div class="feature-icon"><i class="bi bi-bullseye"></i></div>
+                        <h3 class="h5 fw-bold">Project Goal</h3>
+                        <p class="muted mb-0">
+                            Predict the survival outcome from passenger information.
+                        </p>
+                    </article>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <article class="surface-card">
+                        <div class="feature-icon"><i class="bi bi-diagram-3"></i></div>
+                        <h3 class="h5 fw-bold">ML Task</h3>
+                        <p class="muted mb-0">
+                            Supervised learning with two possible output classes.
+                        </p>
+                    </article>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <article class="surface-card">
+                        <div class="feature-icon"><i class="bi bi-database"></i></div>
+                        <h3 class="h5 fw-bold">Dataset</h3>
+                        <p class="muted mb-0">
+                            Passenger records containing travel and demographic details.
+                        </p>
+                    </article>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <article class="surface-card">
+                        <div class="feature-icon"><i class="bi bi-window"></i></div>
+                        <h3 class="h5 fw-bold">Web Interface</h3>
+                        <p class="muted mb-0">
+                            Flask, HTML, Bootstrap, and JavaScript.
+                        </p>
+                    </article>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-3" id="evaluation">
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="muted small mb-2">Holdout test accuracy</div>
+                        <div class="stat-value text-primary">
+                            {% if accuracy is not none %}
+                                {{ accuracy }}%
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                        <p class="muted small mb-0 mt-2">{{ evaluation_message }}</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="muted small mb-2">Prediction output</div>
+                        <div class="stat-value">0 or 1</div>
+                        <p class="muted small mb-0 mt-2">
+                            0 = did not survive · 1 = survived
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-space bg-white" id="features">
+        <div class="container">
+            <div class="mb-4">
+                <span class="text-primary fw-bold small text-uppercase">Dataset information</span>
+                <h2 class="section-heading mt-2">Input columns explained</h2>
+                <p class="section-subtitle">
+                    The model uses seven input features. Passenger identifiers,
+                    names, ticket numbers, and cabin numbers are excluded.
+                </p>
+            </div>
+
+            <div class="table-responsive border rounded-4 bg-white">
+                <table class="table table-hover mb-0">
+                    <caption class="visually-hidden">Titanic model input columns and descriptions</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Column</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Pclass</code></td>
+                            <td>Numeric</td>
+                            <td>Ticket class of the passenger</td>
+                            <td>1, 2, 3</td>
+                        </tr>
+                        <tr>
+                            <td><code>Sex</code></td>
+                            <td>Categorical</td>
+                            <td>Passenger's recorded sex</td>
+                            <td>male, female</td>
+                        </tr>
+                        <tr>
+                            <td><code>Age</code></td>
+                            <td>Numeric</td>
+                            <td>Passenger's age in years</td>
+                            <td>22</td>
+                        </tr>
+                        <tr>
+                            <td><code>SibSp</code></td>
+                            <td>Numeric</td>
+                            <td>Siblings and spouses aboard</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td><code>Parch</code></td>
+                            <td>Numeric</td>
+                            <td>Parents and children aboard</td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td><code>Fare</code></td>
+                            <td>Numeric</td>
+                            <td>Passenger fare in dataset units</td>
+                            <td>7.25</td>
+                        </tr>
+                        <tr>
+                            <td><code>Embarked</code></td>
+                            <td>Categorical</td>
+                            <td>Port where the passenger embarked</td>
+                            <td>C, Q, S</td>
+                        </tr>
+                        <tr>
+                            <td><code>Survived</code></td>
+                            <td>Target</td>
+                            <td>Historical outcome used for training</td>
+                            <td>0 or 1</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="muted small mt-3">
+                <strong>Preprocessing:</strong> Missing numerical values are
+                imputed using the median; missing categorical values use the
+                most frequent value. Categorical inputs are one-hot encoded and
+                numerical inputs are standardized.
+            </p>
+        </div>
+    </section>
+
+    <section class="section-space" id="algorithm">
+        <div class="container">
+            <div class="row g-4 align-items-stretch">
+                <div class="col-lg-7">
+                    <div class="algorithm-box h-100">
+                        <span class="text-info small fw-bold text-uppercase">Model details</span>
+                        <h2 class="h2 fw-bold mt-2">Gaussian Naive Bayes</h2>
+                        <p class="mt-3">
+                            Gaussian Naive Bayes is a probabilistic classification
+                            algorithm based on Bayes' theorem. It estimates class
+                            probabilities and assumes continuous features follow
+                            a Gaussian distribution within each class, with
+                            conditional independence between features.
+                        </p>
+
+                        <div class="mt-3">
+                            <span class="algorithm-chip">GaussianNB</span>
+                            <span class="algorithm-chip">Binary Classification</span>
+                            <span class="algorithm-chip">Probability Estimates</span>
+                            <span class="algorithm-chip">Scikit-learn</span>
+                        </div>
+
+                        <hr class="border-secondary my-4">
+
+                        <h3 class="h5 fw-bold">Prediction workflow</h3>
+                        <ol class="text-white-50 ps-3 mb-0">
+                            <li class="mb-2">Collect passenger details from the form.</li>
+                            <li class="mb-2">Impute, encode, and scale the inputs.</li>
+                            <li class="mb-2">Apply the trained Gaussian Naive Bayes model.</li>
+                            <li>Display the predicted class and estimated survival probability.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="surface-card">
+                        <div class="feature-icon"><i class="bi bi-speedometer2"></i></div>
+                        <h3 class="h5 fw-bold">Model evaluation</h3>
+                        <p class="muted">
+                            Accuracy is calculated on a held-out 20% test split
+                            when there are enough usable records and both classes
+                            have sufficient examples.
+                        </p>
+                        <ul class="muted ps-3">
+                            <li class="mb-2"><strong>Accuracy:</strong> fraction of test predictions that are correct.</li>
+                            <li class="mb-2"><strong>Precision:</strong> how many predicted positives are correct.</li>
+                            <li class="mb-2"><strong>Recall:</strong> how many actual positives are identified.</li>
+                            <li><strong>F1-score:</strong> balance between precision and recall.</li>
+                        </ul>
+                        <div class="alert alert-warning small mb-0">
+                            Accuracy is data-dependent. It is not a guaranteed
+                            measure of performance on unseen real-world passengers.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-space form-section" id="predict">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="text-primary fw-bold small text-uppercase">Interactive demo</span>
+                <h2 class="section-heading mt-2">Predict passenger survival</h2>
+                <p class="section-subtitle mx-auto">
+                    Enter the passenger details below. The trained model will
+                    return a class prediction and its estimated survival probability.
+                </p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-9 col-xl-8">
+                    <div class="prediction-card">
+
+                        {% if error %}
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+                        </div>
+                        {% endif %}
+
+                        {% if prediction is not none %}
+                        <div class="result-panel {{ 'result-survived' if prediction == 1 else 'result-not-survived' }}"
+                             role="status" aria-live="polite">
+                            <div class="d-flex align-items-start gap-3">
+                                <i class="bi {{ 'bi-check-circle-fill' if prediction == 1 else 'bi-x-circle-fill' }} fs-2"></i>
+                                <div>
+                                    <div class="fw-bold mb-1">Prediction complete</div>
+                                    <div class="result-number">
+                                        {{ 'Survived' if prediction == 1 else 'Did not survive' }}
+                                    </div>
+                                    <div class="mt-2">
+                                        Predicted class: <strong>{{ prediction }}</strong>
+                                    </div>
+                                    {% if survival_probability is not none %}
+                                    <div class="mt-1">
+                                        Estimated survival probability:
+                                        <strong>{{ survival_probability }}%</strong>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <p class="small mb-0 mt-3">
+                                This is a model-generated estimate, not a certainty
+                                or a historical verification of an individual passenger.
+                            </p>
+                        </div>
+                        {% endif %}
+
+                        <form method="POST" action="{{ url_for('index') }}" id="predictionForm">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label for="Pclass" class="form-label">Passenger class</label>
+                                    <select class="form-select" id="Pclass" name="Pclass" required>
+                                        <option value="">Select class</option>
+                                        <option value="1" {{ 'selected' if form_data.get('Pclass') == '1' else '' }}>1st Class</option>
+                                        <option value="2" {{ 'selected' if form_data.get('Pclass') == '2' else '' }}>2nd Class</option>
+                                        <option value="3" {{ 'selected' if form_data.get('Pclass') == '3' else '' }}>3rd Class</option>
+                                    </select>
+                                    <div class="form-text">Ticket class: 1, 2, or 3.</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="Sex" class="form-label">Sex</label>
+                                    <select class="form-select" id="Sex" name="Sex" required>
+                                        <option value="">Select sex</option>
+                                        <option value="male" {{ 'selected' if form_data.get('Sex') == 'male' else '' }}>Male</option>
+                                        <option value="female" {{ 'selected' if form_data.get('Sex') == 'female' else '' }}>Female</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="Age" class="form-label">Age (years)</label>
+                                    <input class="form-control" type="number" id="Age" name="Age"
+                                           min="0" max="120" step="0.1" required
+                                           value="{{ form_data.get('Age', '') }}"
+                                           placeholder="e.g. 22">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="Fare" class="form-label">Fare</label>
+                                    <input class="form-control" type="number" id="Fare" name="Fare"
+                                           min="0" step="0.01" required
+                                           value="{{ form_data.get('Fare', '') }}"
+                                           placeholder="e.g. 7.25">
+                                    <div class="form-text">Use the same fare units as the training dataset.</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="SibSp" class="form-label">Siblings / spouses aboard</label>
+                                    <input class="form-control" type="number" id="SibSp" name="SibSp"
+                                           min="0" max="20" step="1" required
+                                           value="{{ form_data.get('SibSp', '') }}"
+                                           placeholder="e.g. 1">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="Parch" class="form-label">Parents / children aboard</label>
+                                    <input class="form-control" type="number" id="Parch" name="Parch"
+                                           min="0" max="20" step="1" required
+                                           value="{{ form_data.get('Parch', '') }}"
+                                           placeholder="e.g. 0">
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="Embarked" class="form-label">Port of embarkation</label>
+                                    <select class="form-select" id="Embarked" name="Embarked" required>
+                                        <option value="">Select port</option>
+                                        <option value="C" {{ 'selected' if form_data.get('Embarked') == 'C' else '' }}>C — Cherbourg</option>
+                                        <option value="Q" {{ 'selected' if form_data.get('Embarked') == 'Q' else '' }}>Q — Queenstown</option>
+                                        <option value="S" {{ 'selected' if form_data.get('Embarked') == 'S' else '' }}>S — Southampton</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12 d-flex flex-wrap gap-3 mt-2">
+                                    <button class="btn btn-primary btn-lg flex-grow-1" type="submit" id="predictButton">
+                                        <i class="bi bi-magic me-2"></i>Predict Survival
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-lg" type="reset" id="resetButton">
+                                        <i class="bi bi-arrow-counterclockwise me-2"></i>Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="text-center small muted mt-4">
+                            <i class="bi bi-shield-check me-1"></i>
+                            Your form is processed by this Flask application.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-space bg-white" id="faq">
+        <div class="container">
+            <div class="mb-4">
+                <span class="text-primary fw-bold small text-uppercase">Help & information</span>
+                <h2 class="section-heading mt-2">Frequently asked questions</h2>
+            </div>
+
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item faq-item">
+                    <h3 class="accordion-header">
+                        <button class="accordion-button" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#faqOne"
+                                aria-expanded="true" aria-controls="faqOne">
+                            What does the model predict?
+                        </button>
+                    </h3>
+                    <div id="faqOne" class="accordion-collapse collapse show"
+                         data-bs-parent="#faqAccordion">
+                        <div class="accordion-body muted">
+                            It predicts a class of 0 (did not survive) or 1 (survived)
+                            based on the passenger information entered.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item faq-item">
+                    <h3 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#faqTwo"
+                                aria-expanded="false" aria-controls="faqTwo">
+                            What is Gaussian Naive Bayes?
+                        </button>
+                    </h3>
+                    <div id="faqTwo" class="accordion-collapse collapse"
+                         data-bs-parent="#faqAccordion">
+                        <div class="accordion-body muted">
+                            It is a probabilistic machine learning classifier that
+                            applies Bayes' theorem and models continuous features
+                            using Gaussian distributions within each class.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item faq-item">
+                    <h3 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#faqThree"
+                                aria-expanded="false" aria-controls="faqThree">
+                            Why is accuracy sometimes shown as unavailable?
+                        </button>
+                    </h3>
+                    <div id="faqThree" class="accordion-collapse collapse"
+                         data-bs-parent="#faqAccordion">
+                        <div class="accordion-body muted">
+                            The application needs enough valid records and examples
+                            of both classes to perform a useful holdout evaluation.
+                            A tiny sample cannot provide a dependable accuracy estimate.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item faq-item">
+                    <h3 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#faqFour"
+                                aria-expanded="false" aria-controls="faqFour">
+                            Is this prediction historically certain?
+                        </button>
+                    </h3>
+                    <div id="faqFour" class="accordion-collapse collapse"
+                         data-bs-parent="#faqAccordion">
+                        <div class="accordion-body muted">
+                            No. The result is a prediction based on patterns learned
+                            from training data. It is an educational demonstration
+                            and cannot verify an individual passenger's actual fate.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="container">
+        <div class="row align-items-center g-3">
+            <div class="col-md-7">
+                <div class="fw-bold fs-5 mb-2">
+                    <i class="bi bi-water me-2"></i>TitanicML
+                </div>
+                <p class="small mb-0">
+                    An educational machine learning project demonstrating passenger
+                    survival classification with Python and Gaussian Naive Bayes.
+                </p>
+            </div>
+            <div class="col-md-5 text-md-end">
+                <div class="small">© <span id="currentYear"></span> Titanic Survival Prediction</div>
+                <div class="small mt-1">Built with Flask, Bootstrap & scikit-learn</div>
+                <a href="#home" class="small d-inline-block mt-2">
+                    Back to top <i class="bi bi-arrow-up"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.getElementById("currentYear").textContent = new Date().getFullYear();
+
+    const form = document.getElementById("predictionForm");
+    const predictButton = document.getElementById("predictButton");
+    const resetButton = document.getElementById("resetButton");
+
+    form.addEventListener("submit", function (event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            form.classList.add("was-validated");
+            return;
+        }
+
+        predictButton.disabled = true;
+        predictButton.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Predicting...';
+    });
+
+    resetButton.addEventListener("click", function () {
+        form.classList.remove("was-validated");
+        predictButton.disabled = false;
+        predictButton.innerHTML =
+            '<i class="bi bi-magic me-2"></i>Predict Survival';
+
+        const result = document.querySelector(".result-panel");
+        if (result) result.remove();
+
+        const error = document.querySelector(".alert-danger");
+        if (error) error.remove();
+    });
+
+    // Close the mobile navigation after a section is selected.
+    document.querySelectorAll("#mainNav .nav-link").forEach(function (link) {
+        link.addEventListener("click", function () {
+            const nav = document.getElementById("mainNav");
+            if (nav.classList.contains("show")) {
+                bootstrap.Collapse.getOrCreateInstance(nav).hide();
+            }
+        });
+    });
+</script>
+</body>
+</html>
